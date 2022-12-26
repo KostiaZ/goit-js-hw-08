@@ -22,12 +22,13 @@ function resumePlayback() {
       .then(function (seconds) {})
       .catch(function (error) {
         switch (error.name) {
-          case 'Error':
+          case 'RangeError':
             break;
           default:
             break;
         }
       });
+    player;
   }
 }
 resumePlayback();
