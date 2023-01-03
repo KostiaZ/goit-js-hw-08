@@ -1,36 +1,38 @@
 import throttle from 'lodash.throttle';
+const feedbackForm = document.querySelector('.feedback-form');
 
-const STORAGE_KEY = 'feedback-form-state';
-const refs = {
-  form: document.querySelector('.feedback-form'),
-  textarea: document.querySelector('textarea'),
-  input: document.querySelector('input'),
-};
-const formData = {};
+const savedFormDataJSON = localStorage.getItem('feedback-form-state');
+const savedFormData = JSON.parse(savedFormDataJSON);
 
-populateTextarea();
+if (savedFormData !== null) {
+  feedbackForm['email'].value = savedFormData.email;
+  feedbackForm['message'].value = savedFormData.message;
+}
 
-refs.form.addEventListener('input', throttle(onTextareaInput, 500));
+feedbackForm.addEventListener(
+  'input',
+  throttle(event => {
+    const formData = {
+      email: `${feedbackForm['email'].value}`,
+      message: `${feedbackForm['message'].value}`,
+    };
+    const formDataJSON = JSON.stringify(formData);
 
-refs.form.addEventListener('submit', evt => {
-  evt.preventDefault();
-  evt.currentTarget.reset();
-  localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem('feedback-form-state', formDataJSON);
+  }, 500)
+);
+
+feedbackForm.addEventListener('submit', event => {
+  event.preventDefault();
+
+  const formData = {
+    email: `${feedbackForm['email'].value}`,
+    message: `${feedbackForm['message'].value}`,
+  };
+  console.log(formData);
+
+  //remove data from localStorage and feedback-form
+  localStorage.removeItem('feedback-form-state');
+  feedbackForm['email'].value = '';
+  feedbackForm['message'].value = '';
 });
-
-function onTextareaInput(evt) {
-  formData[evt.target.name] = evt.target.value;
-  const stringifiedData = JSON.stringify(formData);
-  localStorage.setItem(STORAGE_KEY, stringifiedData);
-}
-
-function populateTextarea() {
-  const savedMessage = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
-  if (savedMessage === null) {
-    return;
-  }
-  refs.textarea.value = savedMessage['message'] || '';
-  refs.input.value = savedMessage['email'] || '';
-  console.log(savedMessage);
-}
